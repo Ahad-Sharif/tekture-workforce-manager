@@ -10,128 +10,57 @@ import Attendance from "./pages/Attendance"
 import Contracts from "./pages/Contracts"
 
 function App() {
-  const defaultWorkers = [
-    {
-      name: "Ahmed Khan",
-      role: "Electrician",
-      company: "Company A",
-      status: "Active"
-    },
-    {
-      name: "Bilal Shah",
-      role: "Supervisor",
-      company: "Company B",
-      status: "Active"
-    },
-    {
-      name: "Ali Raza",
-      role: "Driver",
-      company: "Company C",
-      status: "Inactive"
+  const [workers, setWorkers] = useState([])
+  const [companies, setCompanies] = useState([])
+  const [attendanceRecords, setAttendanceRecords] = useState([])
+  const [contracts, setContracts] = useState([])
+
+  const fetchWorkers = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/workers")
+      const data = await response.json()
+      setWorkers(data)
+    } catch (error) {
+      console.error("Failed to fetch workers:", error)
     }
-  ]
+  }
 
-  const defaultCompanies = [
-    {
-      name: "Company A",
-      industry: "Construction",
-      location: "Jeddah",
-      workersAssigned: "25"
-    },
-    {
-      name: "Company B",
-      industry: "Logistics",
-      location: "Riyadh",
-      workersAssigned: "12"
-    },
-    {
-      name: "Company C",
-      industry: "Maintenance",
-      location: "Dammam",
-      workersAssigned: "8"
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/companies")
+      const data = await response.json()
+      setCompanies(data)
+    } catch (error) {
+      console.error("Failed to fetch companies:", error)
     }
-  ]
+  }
 
-  const defaultAttendanceRecords = [
-    {
-      workerName: "Ahmed Khan",
-      company: "Company A",
-      date: "2026-03-06",
-      status: "Present"
-    },
-    {
-      workerName: "Bilal Shah",
-      company: "Company B",
-      date: "2026-03-06",
-      status: "Absent"
-    },
-    {
-      workerName: "Ali Raza",
-      company: "Company C",
-      date: "2026-03-06",
-      status: "Present"
+  const fetchAttendanceRecords = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/attendance")
+      const data = await response.json()
+      setAttendanceRecords(data)
+    } catch (error) {
+      console.error("Failed to fetch attendance records:", error)
     }
-  ]
+  }
 
-  const defaultContracts = [
-    {
-      workerName: "Ahmed Khan",
-      company: "Company A",
-      startDate: "2026-01-01",
-      endDate: "2026-12-31",
-      status: "Active"
-    },
-    {
-      workerName: "Bilal Shah",
-      company: "Company B",
-      startDate: "2026-02-01",
-      endDate: "2026-11-30",
-      status: "Active"
-    },
-    {
-      workerName: "Ali Raza",
-      company: "Company C",
-      startDate: "2025-06-01",
-      endDate: "2026-05-31",
-      status: "Expiring Soon"
+  const fetchContracts = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/contracts")
+      const data = await response.json()
+      setContracts(data)
+    } catch (error) {
+      console.error("Failed to fetch contracts:", error)
     }
-  ]
-
-  const [workers, setWorkers] = useState(() => {
-    const savedWorkers = localStorage.getItem("tekture_workers")
-    return savedWorkers ? JSON.parse(savedWorkers) : defaultWorkers
-  })
-
-  const [companies, setCompanies] = useState(() => {
-    const savedCompanies = localStorage.getItem("tekture_companies")
-    return savedCompanies ? JSON.parse(savedCompanies) : defaultCompanies
-  })
-
-  const [attendanceRecords, setAttendanceRecords] = useState(() => {
-    const savedAttendance = localStorage.getItem("tekture_attendance")
-    return savedAttendance ? JSON.parse(savedAttendance) : defaultAttendanceRecords
-  })
-
-  const [contracts, setContracts] = useState(() => {
-    const savedContracts = localStorage.getItem("tekture_contracts")
-    return savedContracts ? JSON.parse(savedContracts) : defaultContracts
-  })
+  }
 
   useEffect(() => {
-    localStorage.setItem("tekture_workers", JSON.stringify(workers))
-  }, [workers])
-
-  useEffect(() => {
-    localStorage.setItem("tekture_companies", JSON.stringify(companies))
-  }, [companies])
-
-  useEffect(() => {
-    localStorage.setItem("tekture_attendance", JSON.stringify(attendanceRecords))
-  }, [attendanceRecords])
-
-  useEffect(() => {
-    localStorage.setItem("tekture_contracts", JSON.stringify(contracts))
-  }, [contracts])
+    fetchWorkers()
+    fetchCompanies()
+    fetchAttendanceRecords()
+    fetchContracts()
+  }, [])
 
   const todayFormatted = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -210,7 +139,7 @@ function App() {
             element={
               <Workers
                 workers={workers}
-                setWorkers={setWorkers}
+                fetchWorkers={fetchWorkers}
               />
             }
           />
@@ -220,7 +149,7 @@ function App() {
             element={
               <Companies
                 companies={companies}
-                setCompanies={setCompanies}
+                fetchCompanies={fetchCompanies}
               />
             }
           />
@@ -230,7 +159,7 @@ function App() {
             element={
               <Attendance
                 attendanceRecords={attendanceRecords}
-                setAttendanceRecords={setAttendanceRecords}
+                fetchAttendanceRecords={fetchAttendanceRecords}
               />
             }
           />
@@ -240,7 +169,7 @@ function App() {
             element={
               <Contracts
                 contracts={contracts}
-                setContracts={setContracts}
+                fetchContracts={fetchContracts}
               />
             }
           />

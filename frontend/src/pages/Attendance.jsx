@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-function Attendance({ attendanceRecords, setAttendanceRecords }) {
+function Attendance({ attendanceRecords, fetchAttendanceRecords }) {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -30,7 +30,7 @@ function Attendance({ attendanceRecords, setAttendanceRecords }) {
     setShowForm(false)
   }
 
-  const handleSaveAttendance = () => {
+  const handleSaveAttendance = async () => {
     const trimmedWorkerName = newAttendance.workerName.trim()
     const trimmedCompany = newAttendance.company.trim()
     const trimmedDate = newAttendance.date.trim()
@@ -40,10 +40,7 @@ function Attendance({ attendanceRecords, setAttendanceRecords }) {
       return
     }
 
-    if (
-      newAttendance.status !== "Present" &&
-      newAttendance.status !== "Absent"
-    ) {
+    if (newAttendance.status !== "Present" && newAttendance.status !== "Absent") {
       alert("Invalid attendance status selected")
       return
     }
@@ -55,28 +52,45 @@ function Attendance({ attendanceRecords, setAttendanceRecords }) {
       status: newAttendance.status
     }
 
-    setAttendanceRecords([...attendanceRecords, attendanceToSave])
-    resetForm()
+    try {
+      await fetch("http://localhost:5001/api/attendance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(attendanceToSave)
+      })
+
+      await fetchAttendanceRecords()
+      resetForm()
+    } catch (error) {
+      console.error("Failed to save attendance:", error)
+      alert("Failed to save attendance")
+    }
   }
 
-  const handleDeleteAttendance = (indexToDelete) => {
+  const handleDeleteAttendance = async (attendanceId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this attendance record?")
 
     if (!confirmDelete) {
       return
     }
 
-    const updatedRecords = attendanceRecords.filter(
-      (record, index) => index !== indexToDelete
-    )
-    setAttendanceRecords(updatedRecords)
+    try {
+      await fetch(`http://localhost:5001/api/attendance/${attendanceId}`, {
+        method: "DELETE"
+      })
+
+      await fetchAttendanceRecords()
+    } catch (error) {
+      console.error("Failed to delete attendance:", error)
+      alert("Failed to delete attendance")
+    }
   }
 
-  const filteredAttendance = attendanceRecords
-    .map((record, index) => ({ ...record, originalIndex: index }))
-    .filter((record) =>
-      record.workerName.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
-    )
+  const filteredAttendance = attendanceRecords.filter((record) =>
+    record.workerName.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
+  )
 
   return (
     <div className="page-section">
@@ -169,7 +183,7 @@ function Attendance({ attendanceRecords, setAttendanceRecords }) {
 
           <tbody>
             {filteredAttendance.map((record) => (
-              <tr key={record.originalIndex}>
+              <tr key={record._id}>
                 <td>{record.workerName}</td>
                 <td>{record.company}</td>
                 <td>{record.date}</td>
@@ -187,7 +201,7 @@ function Attendance({ attendanceRecords, setAttendanceRecords }) {
                 <td className="action-buttons">
                   <button
                     className="delete-btn"
-                    onClick={() => handleDeleteAttendance(record.originalIndex)}
+                    onClick={() => handleDeleteAttendance(record._id)}
                   >
                     Delete
                   </button>

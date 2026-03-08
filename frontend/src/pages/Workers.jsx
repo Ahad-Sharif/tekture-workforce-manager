@@ -1,30 +1,9 @@
 import { useState } from "react"
 
-function Workers() {
+function Workers({ workers, fetchWorkers }) {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [editingIndex, setEditingIndex] = useState(null)
-
-  const [workers, setWorkers] = useState([
-    {
-      name: "Ahmed Khan",
-      role: "Electrician",
-      company: "Company A",
-      status: "Active"
-    },
-    {
-      name: "Bilal Shah",
-      role: "Supervisor",
-      company: "Company B",
-      status: "Active"
-    },
-    {
-      name: "Ali Raza",
-      role: "Driver",
-      company: "Company C",
-      status: "Inactive"
-    }
-  ])
+  const [editingId, setEditingId] = useState(null)
 
   const [newWorker, setNewWorker] = useState({
     name: "",
@@ -49,11 +28,11 @@ function Workers() {
       company: "",
       status: "Active"
     })
-    setEditingIndex(null)
+    setEditingId(null)
     setShowForm(false)
   }
 
-  const handleSaveWorker = () => {
+  const handleSaveWorker = async () => {
     const trimmedName = newWorker.name.trim()
     const trimmedRole = newWorker.role.trim()
     const trimmedCompany = newWorker.company.trim()
@@ -75,31 +54,53 @@ function Workers() {
       status: newWorker.status
     }
 
-    if (editingIndex !== null) {
-      const updatedWorkers = [...workers]
-      updatedWorkers[editingIndex] = workerToSave
-      setWorkers(updatedWorkers)
-    } else {
-      setWorkers([...workers, workerToSave])
-    }
+    try {
+      if (editingId) {
+        await fetch(`http://localhost:5001/api/workers/${editingId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(workerToSave)
+        })
+      } else {
+        await fetch("http://localhost:5001/api/workers", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(workerToSave)
+        })
+      }
 
-    resetForm()
+      await fetchWorkers()
+      resetForm()
+    } catch (error) {
+      console.error("Failed to save worker:", error)
+      alert("Failed to save worker")
+    }
   }
 
-  const handleDeleteWorker = (indexToDelete) => {
+  const handleDeleteWorker = async (workerId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this worker?")
 
     if (!confirmDelete) {
       return
     }
 
-    const updatedWorkers = workers.filter((worker, index) => index !== indexToDelete)
-    setWorkers(updatedWorkers)
+    try {
+      await fetch(`http://localhost:5001/api/workers/${workerId}`, {
+        method: "DELETE"
+      })
+
+      await fetchWorkers()
+    } catch (error) {
+      console.error("Failed to delete worker:", error)
+      alert("Failed to delete worker")
+    }
   }
 
-  const handleEditWorker = (indexToEdit) => {
-    const worker = workers[indexToEdit]
-
+  const handleEditWorker = (worker) => {
     setNewWorker({
       name: worker.name,
       role: worker.role,
@@ -107,15 +108,13 @@ function Workers() {
       status: worker.status
     })
 
-    setEditingIndex(indexToEdit)
+    setEditingId(worker._id)
     setShowForm(true)
   }
 
-  const filteredWorkers = workers
-    .map((worker, index) => ({ ...worker, originalIndex: index }))
-    .filter((worker) =>
-      worker.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
-    )
+  const filteredWorkers = workers.filter((worker) =>
+    worker.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
+  )
 
   return (
     <div className="page-section">
@@ -128,13 +127,7 @@ function Workers() {
         <button
           className="primary-btn"
           onClick={() => {
-            setEditingIndex(null)
-            setNewWorker({
-              name: "",
-              role: "",
-              company: "",
-              status: "Active"
-            })
+            resetForm()
             setShowForm(true)
           }}
         >
@@ -145,7 +138,7 @@ function Workers() {
       {showForm && (
         <div className="form-card">
           <h2 className="form-title">
-            {editingIndex !== null ? "Edit Worker" : "Add New Worker"}
+            {editingId ? "Edit Worker" : "Add New Worker"}
           </h2>
 
           <div className="form-grid">
@@ -189,7 +182,7 @@ function Workers() {
 
           <div className="form-actions">
             <button className="primary-btn" onClick={handleSaveWorker}>
-              {editingIndex !== null ? "Update Worker" : "Save Worker"}
+              {editingId ? "Update Worker" : "Save Worker"}
             </button>
 
             <button className="secondary-btn" onClick={resetForm}>
@@ -223,7 +216,7 @@ function Workers() {
 
           <tbody>
             {filteredWorkers.map((worker) => (
-              <tr key={worker.originalIndex}>
+              <tr key={worker._id}>
                 <td>{worker.name}</td>
                 <td>{worker.role}</td>
                 <td>{worker.company}</td>
@@ -241,14 +234,14 @@ function Workers() {
                 <td className="action-buttons">
                   <button
                     className="edit-btn"
-                    onClick={() => handleEditWorker(worker.originalIndex)}
+                    onClick={() => handleEditWorker(worker)}
                   >
                     Edit
                   </button>
 
                   <button
                     className="delete-btn"
-                    onClick={() => handleDeleteWorker(worker.originalIndex)}
+                    onClick={() => handleDeleteWorker(worker._id)}
                   >
                     Delete
                   </button>

@@ -1,9 +1,9 @@
 import { useState } from "react"
 
-function Companies({ companies, setCompanies }) {
+function Companies({ companies, fetchCompanies }) {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [editingIndex, setEditingIndex] = useState(null)
+  const [editingId, setEditingId] = useState(null)
 
   const [newCompany, setNewCompany] = useState({
     name: "",
@@ -28,15 +28,15 @@ function Companies({ companies, setCompanies }) {
       location: "",
       workersAssigned: ""
     })
-    setEditingIndex(null)
+    setEditingId(null)
     setShowForm(false)
   }
 
-  const handleSaveCompany = () => {
+  const handleSaveCompany = async () => {
     const trimmedName = newCompany.name.trim()
     const trimmedIndustry = newCompany.industry.trim()
     const trimmedLocation = newCompany.location.trim()
-    const trimmedWorkersAssigned = newCompany.workersAssigned.trim()
+    const trimmedWorkersAssigned = newCompany.workersAssigned.toString().trim()
 
     if (
       trimmedName === "" ||
@@ -57,23 +57,37 @@ function Companies({ companies, setCompanies }) {
       name: trimmedName,
       industry: trimmedIndustry,
       location: trimmedLocation,
-      workersAssigned: trimmedWorkersAssigned
+      workersAssigned: Number(trimmedWorkersAssigned)
     }
 
-    if (editingIndex !== null) {
-      const updatedCompanies = [...companies]
-      updatedCompanies[editingIndex] = companyToSave
-      setCompanies(updatedCompanies)
-    } else {
-      setCompanies([...companies, companyToSave])
-    }
+    try {
+      if (editingId) {
+        await fetch(`http://localhost:5001/api/companies/${editingId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(companyToSave)
+        })
+      } else {
+        await fetch("http://localhost:5001/api/companies", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(companyToSave)
+        })
+      }
 
-    resetForm()
+      await fetchCompanies()
+      resetForm()
+    } catch (error) {
+      console.error("Failed to save company:", error)
+      alert("Failed to save company")
+    }
   }
 
-  const handleEditCompany = (indexToEdit) => {
-    const company = companies[indexToEdit]
-
+  const handleEditCompany = (company) => {
     setNewCompany({
       name: company.name,
       industry: company.industry,
@@ -81,26 +95,32 @@ function Companies({ companies, setCompanies }) {
       workersAssigned: company.workersAssigned
     })
 
-    setEditingIndex(indexToEdit)
+    setEditingId(company._id)
     setShowForm(true)
   }
 
-  const handleDeleteCompany = (indexToDelete) => {
+  const handleDeleteCompany = async (companyId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this company?")
 
     if (!confirmDelete) {
       return
     }
 
-    const updatedCompanies = companies.filter((company, index) => index !== indexToDelete)
-    setCompanies(updatedCompanies)
+    try {
+      await fetch(`http://localhost:5001/api/companies/${companyId}`, {
+        method: "DELETE"
+      })
+
+      await fetchCompanies()
+    } catch (error) {
+      console.error("Failed to delete company:", error)
+      alert("Failed to delete company")
+    }
   }
 
-  const filteredCompanies = companies
-    .map((company, index) => ({ ...company, originalIndex: index }))
-    .filter((company) =>
-      company.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
-    )
+  const filteredCompanies = companies.filter((company) =>
+    company.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
+  )
 
   return (
     <div className="page-section">
@@ -113,13 +133,7 @@ function Companies({ companies, setCompanies }) {
         <button
           className="primary-btn"
           onClick={() => {
-            setEditingIndex(null)
-            setNewCompany({
-              name: "",
-              industry: "",
-              location: "",
-              workersAssigned: ""
-            })
+            resetForm()
             setShowForm(true)
           }}
         >
@@ -130,7 +144,7 @@ function Companies({ companies, setCompanies }) {
       {showForm && (
         <div className="form-card">
           <h2 className="form-title">
-            {editingIndex !== null ? "Edit Company" : "Add New Company"}
+            {editingId ? "Edit Company" : "Add New Company"}
           </h2>
 
           <div className="form-grid">
@@ -162,7 +176,7 @@ function Companies({ companies, setCompanies }) {
             />
 
             <input
-              type="text"
+              type="number"
               name="workersAssigned"
               placeholder="Workers Assigned"
               className="form-input"
@@ -173,7 +187,7 @@ function Companies({ companies, setCompanies }) {
 
           <div className="form-actions">
             <button className="primary-btn" onClick={handleSaveCompany}>
-              {editingIndex !== null ? "Update Company" : "Save Company"}
+              {editingId ? "Update Company" : "Save Company"}
             </button>
 
             <button className="secondary-btn" onClick={resetForm}>
@@ -207,7 +221,7 @@ function Companies({ companies, setCompanies }) {
 
           <tbody>
             {filteredCompanies.map((company) => (
-              <tr key={company.originalIndex}>
+              <tr key={company._id}>
                 <td>{company.name}</td>
                 <td>{company.industry}</td>
                 <td>{company.location}</td>
@@ -215,14 +229,14 @@ function Companies({ companies, setCompanies }) {
                 <td className="action-buttons">
                   <button
                     className="edit-btn"
-                    onClick={() => handleEditCompany(company.originalIndex)}
+                    onClick={() => handleEditCompany(company)}
                   >
                     Edit
                   </button>
 
                   <button
                     className="delete-btn"
-                    onClick={() => handleDeleteCompany(company.originalIndex)}
+                    onClick={() => handleDeleteCompany(company._id)}
                   >
                     Delete
                   </button>

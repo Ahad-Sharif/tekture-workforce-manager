@@ -1,9 +1,9 @@
 import { useState } from "react"
 
-function Contracts({ contracts, setContracts }) {
+function Contracts({ contracts, fetchContracts }) {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [editingIndex, setEditingIndex] = useState(null)
+  const [editingId, setEditingId] = useState(null)
 
   const [newContract, setNewContract] = useState({
     workerName: "",
@@ -30,11 +30,11 @@ function Contracts({ contracts, setContracts }) {
       endDate: "",
       status: "Active"
     })
-    setEditingIndex(null)
+    setEditingId(null)
     setShowForm(false)
   }
 
-  const handleSaveContract = () => {
+  const handleSaveContract = async () => {
     const trimmedWorkerName = newContract.workerName.trim()
     const trimmedCompany = newContract.company.trim()
     const trimmedStartDate = newContract.startDate.trim()
@@ -67,20 +67,34 @@ function Contracts({ contracts, setContracts }) {
       status: newContract.status
     }
 
-    if (editingIndex !== null) {
-      const updatedContracts = [...contracts]
-      updatedContracts[editingIndex] = contractToSave
-      setContracts(updatedContracts)
-    } else {
-      setContracts([...contracts, contractToSave])
-    }
+    try {
+      if (editingId) {
+        await fetch(`http://localhost:5001/api/contracts/${editingId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(contractToSave)
+        })
+      } else {
+        await fetch("http://localhost:5001/api/contracts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(contractToSave)
+        })
+      }
 
-    resetForm()
+      await fetchContracts()
+      resetForm()
+    } catch (error) {
+      console.error("Failed to save contract:", error)
+      alert("Failed to save contract")
+    }
   }
 
-  const handleEditContract = (indexToEdit) => {
-    const contract = contracts[indexToEdit]
-
+  const handleEditContract = (contract) => {
     setNewContract({
       workerName: contract.workerName,
       company: contract.company,
@@ -89,28 +103,32 @@ function Contracts({ contracts, setContracts }) {
       status: contract.status
     })
 
-    setEditingIndex(indexToEdit)
+    setEditingId(contract._id)
     setShowForm(true)
   }
 
-  const handleDeleteContract = (indexToDelete) => {
+  const handleDeleteContract = async (contractId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this contract?")
 
     if (!confirmDelete) {
       return
     }
 
-    const updatedContracts = contracts.filter(
-      (contract, index) => index !== indexToDelete
-    )
-    setContracts(updatedContracts)
+    try {
+      await fetch(`http://localhost:5001/api/contracts/${contractId}`, {
+        method: "DELETE"
+      })
+
+      await fetchContracts()
+    } catch (error) {
+      console.error("Failed to delete contract:", error)
+      alert("Failed to delete contract")
+    }
   }
 
-  const filteredContracts = contracts
-    .map((contract, index) => ({ ...contract, originalIndex: index }))
-    .filter((contract) =>
-      contract.workerName.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
-    )
+  const filteredContracts = contracts.filter((contract) =>
+    contract.workerName.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
+  )
 
   return (
     <div className="page-section">
@@ -123,14 +141,7 @@ function Contracts({ contracts, setContracts }) {
         <button
           className="primary-btn"
           onClick={() => {
-            setEditingIndex(null)
-            setNewContract({
-              workerName: "",
-              company: "",
-              startDate: "",
-              endDate: "",
-              status: "Active"
-            })
+            resetForm()
             setShowForm(true)
           }}
         >
@@ -141,7 +152,7 @@ function Contracts({ contracts, setContracts }) {
       {showForm && (
         <div className="form-card">
           <h2 className="form-title">
-            {editingIndex !== null ? "Edit Contract" : "Add New Contract"}
+            {editingId ? "Edit Contract" : "Add New Contract"}
           </h2>
 
           <div className="form-grid">
@@ -193,7 +204,7 @@ function Contracts({ contracts, setContracts }) {
 
           <div className="form-actions">
             <button className="primary-btn" onClick={handleSaveContract}>
-              {editingIndex !== null ? "Update Contract" : "Save Contract"}
+              {editingId ? "Update Contract" : "Save Contract"}
             </button>
 
             <button className="secondary-btn" onClick={resetForm}>
@@ -228,7 +239,7 @@ function Contracts({ contracts, setContracts }) {
 
           <tbody>
             {filteredContracts.map((contract) => (
-              <tr key={contract.originalIndex}>
+              <tr key={contract._id}>
                 <td>{contract.workerName}</td>
                 <td>{contract.company}</td>
                 <td>{contract.startDate}</td>
@@ -249,14 +260,14 @@ function Contracts({ contracts, setContracts }) {
                 <td className="action-buttons">
                   <button
                     className="edit-btn"
-                    onClick={() => handleEditContract(contract.originalIndex)}
+                    onClick={() => handleEditContract(contract)}
                   >
                     Edit
                   </button>
 
                   <button
                     className="delete-btn"
-                    onClick={() => handleDeleteContract(contract.originalIndex)}
+                    onClick={() => handleDeleteContract(contract._id)}
                   >
                     Delete
                   </button>
