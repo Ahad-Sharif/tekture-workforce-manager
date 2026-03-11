@@ -51,9 +51,10 @@ function Login() {
 
       if (data.user.role === "admin") {
         window.location.href = "/"
-      } else if (data.user.role === "employee") {
+      } else {
         window.location.href = "/employee"
       }
+
     } catch (error) {
       console.error("Login error:", error)
       alert("Something went wrong during login")
@@ -62,14 +63,27 @@ function Login() {
 
   return (
     <div className="login-page">
+
       <div className="login-card">
-        <div className="login-brand-icon">T</div>
+
+        <img
+          src="/psfm-logo.gif"
+          alt="PSFM Logo"
+          className="login-brand-gif"
+        />
 
         <h1>Tekture</h1>
-        <h2 className="login-tagline">Workforce Management Made Easy</h2>
-        <p>Sign in to continue</p>
+
+        <h2 style={{ color: "#596579", marginBottom: "20px" }}>
+          Workforce Management Made Easy
+        </h2>
+
+        <p style={{ marginBottom: "25px" }}>
+          Sign in to continue
+        </p>
 
         <form onSubmit={handleLogin} className="login-form">
+
           <input
             type="email"
             name="email"
@@ -88,11 +102,14 @@ function Login() {
             onChange={handleChange}
           />
 
-          <button type="submit" className="primary-btn login-btn">
+          <button type="submit" className="primary-btn">
             Login
           </button>
+
         </form>
+
       </div>
+
     </div>
   )
 }

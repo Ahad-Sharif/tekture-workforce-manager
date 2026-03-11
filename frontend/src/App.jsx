@@ -68,16 +68,15 @@ function App() {
       <div className="app-layout">
         <aside className="sidebar">
           <div
-            className="brand-block"
+            className="brand-block brand-block-logo-only"
             onClick={handleLogoClick}
             style={{ cursor: "pointer" }}
           >
-            <div className="brand-icon">T</div>
-
-            <div className="brand-text">
-              <h2 className="logo">Tekture</h2>
-              <p>Workforce Management Made Easy</p>
-            </div>
+            <img
+              src="/psfm-logo.gif"
+              alt="PSFM Logo"
+              className="brand-gif"
+            />
           </div>
 
           <nav className="sidebar-nav">
@@ -141,16 +140,15 @@ function App() {
     <div className="app-layout">
       <aside className="sidebar">
         <div
-          className="brand-block"
+          className="brand-block brand-block-logo-only"
           onClick={handleLogoClick}
           style={{ cursor: "pointer" }}
         >
-          <div className="brand-icon">T</div>
-
-          <div className="brand-text">
-            <h2 className="logo">Tekture</h2>
-            <p>Workforce Management Made Easy</p>
-          </div>
+          <img
+            src="/psfm-logo.gif"
+            alt="PSFM Logo"
+            className="brand-gif"
+          />
         </div>
 
         <nav className="sidebar-nav">
