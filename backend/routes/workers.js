@@ -4,7 +4,7 @@ const Worker = require("../models/Worker")
 
 router.get("/", async (req, res) => {
   try {
-    const workers = await Worker.find()
+    const workers = await Worker.find().lean()
     res.json(workers)
   } catch (error) {
     res.status(500).json({ message: error.message })

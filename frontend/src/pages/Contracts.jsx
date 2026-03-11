@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
 
-function Contracts({ contracts, fetchContracts }) {
+function Contracts() {
+  const [contracts, setContracts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [editingId, setEditingId] = useState(null)
@@ -13,6 +15,22 @@ function Contracts({ contracts, fetchContracts }) {
     endDate: "",
     status: "Active"
   })
+
+  const fetchContracts = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contracts`)
+      const data = await response.json()
+      setContracts(data)
+    } catch (error) {
+      console.error("Failed to fetch contracts:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchContracts()
+  }, [])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -130,6 +148,14 @@ function Contracts({ contracts, fetchContracts }) {
   const filteredContracts = contracts.filter((contract) =>
     contract.workerName.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="page-section">
+        <h2>Loading contracts...</h2>
+      </div>
+    )
+  }
 
   return (
     <div className="page-section">

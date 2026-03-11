@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
 
-function Companies({ companies, fetchCompanies }) {
+function Companies() {
+  const [companies, setCompanies] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [editingId, setEditingId] = useState(null)
@@ -12,6 +14,22 @@ function Companies({ companies, fetchCompanies }) {
     location: "",
     workersAssigned: ""
   })
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/companies`)
+      const data = await response.json()
+      setCompanies(data)
+    } catch (error) {
+      console.error("Failed to fetch companies:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchCompanies()
+  }, [])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -122,6 +140,14 @@ function Companies({ companies, fetchCompanies }) {
   const filteredCompanies = companies.filter((company) =>
     company.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="page-section">
+        <h2>Loading companies...</h2>
+      </div>
+    )
+  }
 
   return (
     <div className="page-section">

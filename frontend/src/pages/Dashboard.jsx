@@ -1,6 +1,52 @@
+import { useEffect, useState } from "react"
 import StatCard from "../components/StatCard"
+import { API_BASE_URL } from "../api"
 
-function Dashboard({ workers, companies, attendanceRecords, contracts }) {
+function Dashboard() {
+  const [workers, setWorkers] = useState([])
+  const [companies, setCompanies] = useState([])
+  const [attendanceRecords, setAttendanceRecords] = useState([])
+  const [contracts, setContracts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchDashboardData = async () => {
+    try {
+      const [workersResponse, companiesResponse, attendanceResponse, contractsResponse] =
+        await Promise.all([
+          fetch(`${API_BASE_URL}/api/workers`),
+          fetch(`${API_BASE_URL}/api/companies`),
+          fetch(`${API_BASE_URL}/api/attendance`),
+          fetch(`${API_BASE_URL}/api/contracts`)
+        ])
+
+      const workersData = await workersResponse.json()
+      const companiesData = await companiesResponse.json()
+      const attendanceData = await attendanceResponse.json()
+      const contractsData = await contractsResponse.json()
+
+      setWorkers(workersData)
+      setCompanies(companiesData)
+      setAttendanceRecords(attendanceData)
+      setContracts(contractsData)
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="page-section">
+        <h2>Loading dashboard...</h2>
+      </div>
+    )
+  }
+
   const today = new Date().toISOString().split("T")[0]
 
   const totalWorkers = workers.length
@@ -53,7 +99,7 @@ function Dashboard({ workers, companies, attendanceRecords, contracts }) {
       <section className="dashboard-section">
         <div className="dashboard-section-header">
           <h2>Daily Operations</h2>
-          <p>Attendance and contract activity</p>
+          <p>Attendance and contract activity for today</p>
         </div>
 
         <div className="dashboard-grid">

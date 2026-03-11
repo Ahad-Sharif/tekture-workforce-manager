@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import "./App.css"
 import { Routes, Route, NavLink, Navigate, useNavigate } from "react-router-dom"
 import { MdDashboard, MdGroups, MdBusiness, MdCalendarMonth, MdDescription } from "react-icons/md"
-import { API_BASE_URL } from "./api"
 
 import Dashboard from "./pages/Dashboard"
 import Workers from "./pages/Workers"
@@ -26,69 +25,11 @@ function App() {
   }
 
   const [user, setUser] = useState(getStoredUser())
-  const [workers, setWorkers] = useState([])
-  const [companies, setCompanies] = useState([])
-  const [attendanceRecords, setAttendanceRecords] = useState([])
-  const [contracts, setContracts] = useState([])
-
-  const fetchWorkers = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/workers`)
-      const data = await response.json()
-      setWorkers(data)
-    } catch (error) {
-      console.error("Failed to fetch workers:", error)
-    }
-  }
-
-  const fetchCompanies = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/companies`)
-      const data = await response.json()
-      setCompanies(data)
-    } catch (error) {
-      console.error("Failed to fetch companies:", error)
-    }
-  }
-
-  const fetchAttendanceRecords = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/attendance`)
-      const data = await response.json()
-      setAttendanceRecords(data)
-    } catch (error) {
-      console.error("Failed to fetch attendance records:", error)
-    }
-  }
-
-  const fetchContracts = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/contracts`)
-      const data = await response.json()
-      setContracts(data)
-    } catch (error) {
-      console.error("Failed to fetch contracts:", error)
-    }
-  }
 
   useEffect(() => {
     const latestUser = getStoredUser()
     setUser(latestUser)
   }, [])
-
-  useEffect(() => {
-    if (user) {
-      fetchWorkers()
-      fetchCompanies()
-      fetchAttendanceRecords()
-      fetchContracts()
-    } else {
-      setWorkers([])
-      setCompanies([])
-      setAttendanceRecords([])
-      setContracts([])
-    }
-  }, [user])
 
   const todayFormatted = new Date().toLocaleDateString("en-GB", {
     weekday: "long",
@@ -184,27 +125,10 @@ function App() {
 
           <Routes>
             <Route path="/employee" element={<EmployeeDashboard />} />
-            <Route
-              path="/workers"
-              element={<Workers workers={workers} fetchWorkers={fetchWorkers} />}
-            />
-            <Route
-              path="/companies"
-              element={<Companies companies={companies} fetchCompanies={fetchCompanies} />}
-            />
-            <Route
-              path="/attendance"
-              element={
-                <Attendance
-                  attendanceRecords={attendanceRecords}
-                  fetchAttendanceRecords={fetchAttendanceRecords}
-                />
-              }
-            />
-            <Route
-              path="/contracts"
-              element={<Contracts contracts={contracts} fetchContracts={fetchContracts} />}
-            />
+            <Route path="/workers" element={<Workers />} />
+            <Route path="/companies" element={<Companies />} />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/contracts" element={<Contracts />} />
             <Route path="/" element={<Navigate to="/employee" replace />} />
             <Route path="*" element={<Navigate to="/employee" replace />} />
           </Routes>
@@ -273,43 +197,11 @@ function App() {
         </div>
 
         <Routes>
-          <Route
-            path="/"
-            element={
-              <Dashboard
-                workers={workers}
-                companies={companies}
-                attendanceRecords={attendanceRecords}
-                contracts={contracts}
-              />
-            }
-          />
-
-          <Route
-            path="/workers"
-            element={<Workers workers={workers} fetchWorkers={fetchWorkers} />}
-          />
-
-          <Route
-            path="/companies"
-            element={<Companies companies={companies} fetchCompanies={fetchCompanies} />}
-          />
-
-          <Route
-            path="/attendance"
-            element={
-              <Attendance
-                attendanceRecords={attendanceRecords}
-                fetchAttendanceRecords={fetchAttendanceRecords}
-              />
-            }
-          />
-
-          <Route
-            path="/contracts"
-            element={<Contracts contracts={contracts} fetchContracts={fetchContracts} />}
-          />
-
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/workers" element={<Workers />} />
+          <Route path="/companies" element={<Companies />} />
+          <Route path="/attendance" element={<Attendance />} />
+          <Route path="/contracts" element={<Contracts />} />
           <Route path="/employee" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -4,7 +4,7 @@ const Contract = require("../models/Contract")
 
 router.get("/", async (req, res) => {
   try {
-    const contracts = await Contract.find()
+    const contracts = await Contract.find().lean()
     res.json(contracts)
   } catch (error) {
     res.status(500).json({ message: error.message })

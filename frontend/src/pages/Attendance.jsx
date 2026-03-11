@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
 
-function Attendance({ attendanceRecords, fetchAttendanceRecords }) {
+function Attendance() {
+  const [attendanceRecords, setAttendanceRecords] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
@@ -11,6 +13,22 @@ function Attendance({ attendanceRecords, fetchAttendanceRecords }) {
     date: "",
     status: "Present"
   })
+
+  const fetchAttendanceRecords = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/attendance`)
+      const data = await response.json()
+      setAttendanceRecords(data)
+    } catch (error) {
+      console.error("Failed to fetch attendance records:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAttendanceRecords()
+  }, [])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -92,6 +110,14 @@ function Attendance({ attendanceRecords, fetchAttendanceRecords }) {
   const filteredAttendance = attendanceRecords.filter((record) =>
     record.workerName.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="page-section">
+        <h2>Loading attendance...</h2>
+      </div>
+    )
+  }
 
   return (
     <div className="page-section">

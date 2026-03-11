@@ -1,7 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
 
-function Workers({ workers, fetchWorkers }) {
+function Workers() {
+  const [workers, setWorkers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [editingId, setEditingId] = useState(null)
@@ -15,6 +17,22 @@ function Workers({ workers, fetchWorkers }) {
     phoneNumber: "",
     status: "Active"
   })
+
+  const fetchWorkers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/workers`)
+      const data = await response.json()
+      setWorkers(data)
+    } catch (error) {
+      console.error("Failed to fetch workers:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchWorkers()
+  }, [])
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -138,6 +156,14 @@ function Workers({ workers, fetchWorkers }) {
   const filteredWorkers = workers.filter((worker) =>
     worker.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
   )
+
+  if (loading) {
+    return (
+      <div className="page-section">
+        <h2>Loading workers...</h2>
+      </div>
+    )
+  }
 
   return (
     <div className="page-section">

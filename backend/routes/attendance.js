@@ -4,7 +4,7 @@ const Attendance = require("../models/Attendance")
 
 router.get("/", async (req, res) => {
   try {
-    const attendanceRecords = await Attendance.find()
+    const attendanceRecords = await Attendance.find().lean()
     res.json(attendanceRecords)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     await Attendance.findByIdAndDelete(req.params.id)
-    res.json({ message: "Attendance record deleted successfully" })
+    res.json({ message: "Attendance deleted successfully" })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
