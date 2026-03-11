@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import "./App.css"
-import { Routes, Route, NavLink, Navigate } from "react-router-dom"
+import { Routes, Route, NavLink, Navigate, useNavigate } from "react-router-dom"
 import { MdDashboard, MdGroups, MdBusiness, MdCalendarMonth, MdDescription } from "react-icons/md"
 import { API_BASE_URL } from "./api"
 
@@ -13,6 +13,8 @@ import Login from "./pages/Login"
 import EmployeeDashboard from "./pages/EmployeeDashboard"
 
 function App() {
+  const navigate = useNavigate()
+
   const getStoredUser = () => {
     try {
       const storedUser = localStorage.getItem("user")
@@ -102,6 +104,14 @@ function App() {
     window.location.href = "/"
   }
 
+  const handleLogoClick = () => {
+    if (user?.role === "employee") {
+      navigate("/employee")
+    } else {
+      navigate("/")
+    }
+  }
+
   const displayRoleLabel = user?.role === "admin" ? "Admin" : "Employee"
 
   if (!user) {
@@ -116,7 +126,11 @@ function App() {
     return (
       <div className="app-layout">
         <aside className="sidebar">
-          <div className="brand-block">
+          <div
+            className="brand-block"
+            onClick={handleLogoClick}
+            style={{ cursor: "pointer" }}
+          >
             <div className="brand-icon">T</div>
 
             <div className="brand-text">
@@ -202,7 +216,11 @@ function App() {
   return (
     <div className="app-layout">
       <aside className="sidebar">
-        <div className="brand-block">
+        <div
+          className="brand-block"
+          onClick={handleLogoClick}
+          style={{ cursor: "pointer" }}
+        >
           <div className="brand-icon">T</div>
 
           <div className="brand-text">
