@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom"
 
 function EmployeeDashboard() {
-  const user = JSON.parse(localStorage.getItem("user"))
   const navigate = useNavigate()
 
   return (
@@ -9,7 +8,7 @@ function EmployeeDashboard() {
       <section className="top-banner">
         <h1>Employee Portal</h1>
         <p>
-          Welcome, {user?.name}. Manage worker operations, attendance,
+          Welcome, Employee. Manage worker operations, attendance,
           companies and contracts.
         </p>
       </section>

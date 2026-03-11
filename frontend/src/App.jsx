@@ -102,6 +102,8 @@ function App() {
     window.location.href = "/"
   }
 
+  const displayRoleLabel = user?.role === "admin" ? "Admin" : "Employee"
+
   if (!user) {
     return (
       <Routes>
@@ -159,7 +161,7 @@ function App() {
 
             <div className="topbar-right">
               <span className="date-chip">{todayFormatted}</span>
-              <span className="user-chip">{user.name}</span>
+              <span className="user-chip">{displayRoleLabel}</span>
               <button className="logout-btn" onClick={handleLogout}>
                 Logout
               </button>
@@ -245,7 +247,7 @@ function App() {
 
           <div className="topbar-right">
             <span className="date-chip">{todayFormatted}</span>
-            <span className="user-chip">{user.name}</span>
+            <span className="user-chip">{displayRoleLabel}</span>
             <button className="logout-btn" onClick={handleLogout}>
               Logout
             </button>
