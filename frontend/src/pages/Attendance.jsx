@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { API_BASE_URL } from "../api"
 
 function Attendance({ attendanceRecords, fetchAttendanceRecords }) {
   const [showForm, setShowForm] = useState(false)
@@ -53,7 +54,7 @@ function Attendance({ attendanceRecords, fetchAttendanceRecords }) {
     }
 
     try {
-      await fetch("http://localhost:5001/api/attendance", {
+      await fetch(`${API_BASE_URL}/api/attendance`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -77,7 +78,7 @@ function Attendance({ attendanceRecords, fetchAttendanceRecords }) {
     }
 
     try {
-      await fetch(`http://localhost:5001/api/attendance/${attendanceId}`, {
+      await fetch(`${API_BASE_URL}/api/attendance/${attendanceId}`, {
         method: "DELETE"
       })
 

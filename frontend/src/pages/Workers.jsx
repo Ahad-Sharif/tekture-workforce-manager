@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { API_BASE_URL } from "../api"
 
 function Workers({ workers, fetchWorkers }) {
   const [showForm, setShowForm] = useState(false)
@@ -56,7 +57,7 @@ function Workers({ workers, fetchWorkers }) {
 
     try {
       if (editingId) {
-        await fetch(`http://localhost:5001/api/workers/${editingId}`, {
+        await fetch(`${API_BASE_URL}/api/workers/${editingId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json"
@@ -64,7 +65,7 @@ function Workers({ workers, fetchWorkers }) {
           body: JSON.stringify(workerToSave)
         })
       } else {
-        await fetch("http://localhost:5001/api/workers", {
+        await fetch(`${API_BASE_URL}/api/workers`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -89,7 +90,7 @@ function Workers({ workers, fetchWorkers }) {
     }
 
     try {
-      await fetch(`http://localhost:5001/api/workers/${workerId}`, {
+      await fetch(`${API_BASE_URL}/api/workers/${workerId}`, {
         method: "DELETE"
       })
 

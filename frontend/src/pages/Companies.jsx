@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { API_BASE_URL } from "../api"
 
 function Companies({ companies, fetchCompanies }) {
   const [showForm, setShowForm] = useState(false)
@@ -62,7 +63,7 @@ function Companies({ companies, fetchCompanies }) {
 
     try {
       if (editingId) {
-        await fetch(`http://localhost:5001/api/companies/${editingId}`, {
+        await fetch(`${API_BASE_URL}/api/companies/${editingId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json"
@@ -70,7 +71,7 @@ function Companies({ companies, fetchCompanies }) {
           body: JSON.stringify(companyToSave)
         })
       } else {
-        await fetch("http://localhost:5001/api/companies", {
+        await fetch(`${API_BASE_URL}/api/companies`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -107,7 +108,7 @@ function Companies({ companies, fetchCompanies }) {
     }
 
     try {
-      await fetch(`http://localhost:5001/api/companies/${companyId}`, {
+      await fetch(`${API_BASE_URL}/api/companies/${companyId}`, {
         method: "DELETE"
       })
 

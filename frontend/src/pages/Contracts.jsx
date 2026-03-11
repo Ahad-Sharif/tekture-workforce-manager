@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { API_BASE_URL } from "../api"
 
 function Contracts({ contracts, fetchContracts }) {
   const [showForm, setShowForm] = useState(false)
@@ -69,7 +70,7 @@ function Contracts({ contracts, fetchContracts }) {
 
     try {
       if (editingId) {
-        await fetch(`http://localhost:5001/api/contracts/${editingId}`, {
+        await fetch(`${API_BASE_URL}/api/contracts/${editingId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json"
@@ -77,7 +78,7 @@ function Contracts({ contracts, fetchContracts }) {
           body: JSON.stringify(contractToSave)
         })
       } else {
-        await fetch("http://localhost:5001/api/contracts", {
+        await fetch(`${API_BASE_URL}/api/contracts`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -115,7 +116,7 @@ function Contracts({ contracts, fetchContracts }) {
     }
 
     try {
-      await fetch(`http://localhost:5001/api/contracts/${contractId}`, {
+      await fetch(`${API_BASE_URL}/api/contracts/${contractId}`, {
         method: "DELETE"
       })
 
