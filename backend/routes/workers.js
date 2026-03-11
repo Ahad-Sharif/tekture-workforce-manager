@@ -17,6 +17,9 @@ router.post("/", async (req, res) => {
       name: req.body.name,
       role: req.body.role,
       company: req.body.company,
+      iqamahNo: req.body.iqamahNo,
+      iqamahExpiryDate: req.body.iqamahExpiryDate,
+      phoneNumber: req.body.phoneNumber,
       status: req.body.status
     })
 
@@ -35,6 +38,9 @@ router.put("/:id", async (req, res) => {
         name: req.body.name,
         role: req.body.role,
         company: req.body.company,
+        iqamahNo: req.body.iqamahNo,
+        iqamahExpiryDate: req.body.iqamahExpiryDate,
+        phoneNumber: req.body.phoneNumber,
         status: req.body.status
       },
       { new: true }

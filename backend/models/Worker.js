@@ -13,6 +13,18 @@ const workerSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  iqamahNo: {
+    type: String,
+    required: true
+  },
+  iqamahExpiryDate: {
+    type: String,
+    required: true
+  },
+  phoneNumber: {
+    type: String,
+    required: true
+  },
   status: {
     type: String,
     enum: ["Active", "Inactive"],

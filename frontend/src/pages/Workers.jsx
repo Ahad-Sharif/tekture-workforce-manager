@@ -10,6 +10,9 @@ function Workers({ workers, fetchWorkers }) {
     name: "",
     role: "",
     company: "",
+    iqamahNo: "",
+    iqamahExpiryDate: "",
+    phoneNumber: "",
     status: "Active"
   })
 
@@ -27,6 +30,9 @@ function Workers({ workers, fetchWorkers }) {
       name: "",
       role: "",
       company: "",
+      iqamahNo: "",
+      iqamahExpiryDate: "",
+      phoneNumber: "",
       status: "Active"
     })
     setEditingId(null)
@@ -37,8 +43,18 @@ function Workers({ workers, fetchWorkers }) {
     const trimmedName = newWorker.name.trim()
     const trimmedRole = newWorker.role.trim()
     const trimmedCompany = newWorker.company.trim()
+    const trimmedIqamahNo = newWorker.iqamahNo.trim()
+    const trimmedIqamahExpiryDate = newWorker.iqamahExpiryDate.trim()
+    const trimmedPhoneNumber = newWorker.phoneNumber.trim()
 
-    if (trimmedName === "" || trimmedRole === "" || trimmedCompany === "") {
+    if (
+      trimmedName === "" ||
+      trimmedRole === "" ||
+      trimmedCompany === "" ||
+      trimmedIqamahNo === "" ||
+      trimmedIqamahExpiryDate === "" ||
+      trimmedPhoneNumber === ""
+    ) {
       alert("Please fill all fields properly")
       return
     }
@@ -52,6 +68,9 @@ function Workers({ workers, fetchWorkers }) {
       name: trimmedName,
       role: trimmedRole,
       company: trimmedCompany,
+      iqamahNo: trimmedIqamahNo,
+      iqamahExpiryDate: trimmedIqamahExpiryDate,
+      phoneNumber: trimmedPhoneNumber,
       status: newWorker.status
     }
 
@@ -103,10 +122,13 @@ function Workers({ workers, fetchWorkers }) {
 
   const handleEditWorker = (worker) => {
     setNewWorker({
-      name: worker.name,
-      role: worker.role,
-      company: worker.company,
-      status: worker.status
+      name: worker.name || "",
+      role: worker.role || "",
+      company: worker.company || "",
+      iqamahNo: worker.iqamahNo || "",
+      iqamahExpiryDate: worker.iqamahExpiryDate || "",
+      phoneNumber: worker.phoneNumber || "",
+      status: worker.status || "Active"
     })
 
     setEditingId(worker._id)
@@ -170,6 +192,32 @@ function Workers({ workers, fetchWorkers }) {
               onChange={handleChange}
             />
 
+            <input
+              type="text"
+              name="iqamahNo"
+              placeholder="Iqamah Number"
+              className="form-input"
+              value={newWorker.iqamahNo}
+              onChange={handleChange}
+            />
+
+            <input
+              type="date"
+              name="iqamahExpiryDate"
+              className="form-input"
+              value={newWorker.iqamahExpiryDate}
+              onChange={handleChange}
+            />
+
+            <input
+              type="text"
+              name="phoneNumber"
+              placeholder="Worker Phone Number"
+              className="form-input"
+              value={newWorker.phoneNumber}
+              onChange={handleChange}
+            />
+
             <select
               name="status"
               className="form-input"
@@ -210,6 +258,9 @@ function Workers({ workers, fetchWorkers }) {
               <th>Name</th>
               <th>Role</th>
               <th>Company</th>
+              <th>Iqamah No</th>
+              <th>Iqamah Expiry</th>
+              <th>Phone Number</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -221,6 +272,9 @@ function Workers({ workers, fetchWorkers }) {
                 <td>{worker.name}</td>
                 <td>{worker.role}</td>
                 <td>{worker.company}</td>
+                <td>{worker.iqamahNo || "-"}</td>
+                <td>{worker.iqamahExpiryDate || "-"}</td>
+                <td>{worker.phoneNumber || "-"}</td>
                 <td>
                   <span
                     className={
