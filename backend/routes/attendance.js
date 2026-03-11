@@ -4,7 +4,7 @@ const Attendance = require("../models/Attendance")
 
 router.get("/", async (req, res) => {
   try {
-    const attendanceRecords = await Attendance.find().lean()
+    const attendanceRecords = await Attendance.find().sort({ markedAt: -1 }).lean()
     res.json(attendanceRecords)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -13,11 +13,41 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
+    const { workerId, workerName, company, status } = req.body
+
+    if (!workerId || !workerName || !company || !status) {
+      return res.status(400).json({ message: "Missing required attendance fields" })
+    }
+
+    if (status !== "Present" && status !== "Absent") {
+      return res.status(400).json({ message: "Invalid attendance status" })
+    }
+
+    const now = new Date()
+    const today = now.toISOString().split("T")[0]
+
+    const existingAttendance = await Attendance.findOne({
+      workerId,
+      date: today
+    })
+
+    if (existingAttendance) {
+      existingAttendance.status = status
+      existingAttendance.workerName = workerName
+      existingAttendance.company = company
+      existingAttendance.markedAt = now
+
+      const updatedAttendance = await existingAttendance.save()
+      return res.json(updatedAttendance)
+    }
+
     const newAttendance = new Attendance({
-      workerName: req.body.workerName,
-      company: req.body.company,
-      date: req.body.date,
-      status: req.body.status
+      workerId,
+      workerName,
+      company,
+      date: today,
+      status,
+      markedAt: now
     })
 
     const savedAttendance = await newAttendance.save()
