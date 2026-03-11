@@ -545,3 +545,199 @@
     font-size: 16px;
   }
 }
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .top-banner h1 {
+    font-size: 38px;
+  }
+
+  .stat-card {
+    min-height: 150px;
+  }
+
+  .stat-card p {
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    padding: 20px 16px;
+  }
+
+  .brand-block {
+    margin-bottom: 20px;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sidebar-nav a {
+    font-size: 15px;
+    padding: 10px 12px;
+    flex: 1 1 calc(50% - 10px);
+    justify-content: center;
+  }
+
+  .main-content {
+    padding: 20px 16px;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .topbar-right {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .date-chip,
+  .user-chip,
+  .logout-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .top-banner {
+    padding: 22px 18px;
+  }
+
+  .top-banner h1 {
+    font-size: 34px;
+  }
+
+  .top-banner p {
+    font-size: 16px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-card {
+    min-height: auto;
+    padding: 20px;
+  }
+
+  .stat-card h3 {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  .stat-card p {
+    font-size: 30px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .page-header h1 {
+    font-size: 30px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    min-width: 700px;
+  }
+
+  .search-input {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .login-card {
+    max-width: 100%;
+    padding: 32px 22px;
+  }
+
+  .login-card h1 {
+    font-size: 40px;
+  }
+
+  .login-tagline {
+    font-size: 16px;
+  }
+
+  .login-card p {
+    font-size: 15px;
+  }
+
+  .login-form .form-input,
+  .login-btn {
+    height: 54px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-nav {
+    flex-direction: column;
+  }
+
+  .sidebar-nav a {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+
+  .top-banner h1 {
+    font-size: 28px;
+  }
+
+  .page-header h1 {
+    font-size: 26px;
+  }
+
+  .stat-card h3 {
+    font-size: 20px;
+  }
+
+  .stat-card p {
+    font-size: 26px;
+  }
+
+  .login-brand-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 26px;
+  }
+
+  .login-card h1 {
+    font-size: 34px;
+  }
+}
