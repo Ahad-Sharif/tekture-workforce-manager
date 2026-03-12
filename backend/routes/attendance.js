@@ -32,13 +32,9 @@ router.post("/", async (req, res) => {
     })
 
     if (existingAttendance) {
-      existingAttendance.status = status
-      existingAttendance.workerName = workerName
-      existingAttendance.company = company
-      existingAttendance.markedAt = now
-
-      const updatedAttendance = await existingAttendance.save()
-      return res.json(updatedAttendance)
+      return res.status(400).json({
+        message: "Attendance has already been marked for this worker today"
+      })
     }
 
     const newAttendance = new Attendance({
@@ -47,11 +43,33 @@ router.post("/", async (req, res) => {
       company,
       date: today,
       status,
-      markedAt: now
+      markedAt: now,
+      clockOutAt: null
     })
 
     const savedAttendance = await newAttendance.save()
     res.status(201).json(savedAttendance)
+  } catch (error) {
+    res.status(400).json({ message: error.message })
+  }
+})
+
+router.put("/clock-out/:id", async (req, res) => {
+  try {
+    const attendanceRecord = await Attendance.findById(req.params.id)
+
+    if (!attendanceRecord) {
+      return res.status(404).json({ message: "Attendance record not found" })
+    }
+
+    if (attendanceRecord.clockOutAt) {
+      return res.status(400).json({ message: "Clock out has already been recorded" })
+    }
+
+    attendanceRecord.clockOutAt = new Date()
+
+    const updatedAttendance = await attendanceRecord.save()
+    res.json(updatedAttendance)
   } catch (error) {
     res.status(400).json({ message: error.message })
   }

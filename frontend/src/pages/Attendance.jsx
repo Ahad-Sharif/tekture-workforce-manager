@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
+import { exportTableToPdf } from "../utils/exportPdf"
 
 function Attendance() {
   const [workers, setWorkers] = useState([])
@@ -70,6 +71,26 @@ function Attendance() {
     }
   }
 
+  const handleClockOut = async (attendanceId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/attendance/clock-out/${attendanceId}`, {
+        method: "PUT"
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.message || "Failed to record clock out")
+        return
+      }
+
+      await fetchAttendanceRecords()
+    } catch (error) {
+      console.error("Failed to clock out:", error)
+      alert("Failed to record clock out")
+    }
+  }
+
   const handleDeleteAttendance = async (attendanceId) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this attendance record?")
 
@@ -95,12 +116,34 @@ function Attendance() {
     )
   }
 
-  const formatMarkedTime = (markedAt) => {
-    if (!markedAt) return "-"
-    return new Date(markedAt).toLocaleTimeString([], {
+  const formatTime = (dateValue) => {
+    if (!dateValue) return "-"
+    return new Date(dateValue).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit"
     })
+  }
+
+  const handleDownloadPdf = () => {
+    const columns = [
+      "Worker Name",
+      "Company",
+      "Date",
+      "Clock In",
+      "Clock Out",
+      "Status"
+    ]
+
+    const rows = filteredHistory.map((record) => [
+      record.workerName,
+      record.company,
+      record.date,
+      formatTime(record.markedAt),
+      formatTime(record.clockOutAt),
+      record.status
+    ])
+
+    exportTableToPdf("Attendance Records", columns, rows, "attendance-records.pdf")
   }
 
   const activeWorkers = workers.filter((worker) => worker.status === "Active")
@@ -124,6 +167,10 @@ function Attendance() {
           <h1>Attendance</h1>
           <p>Mark daily attendance for active workers with one click.</p>
         </div>
+
+        <button className="secondary-btn" onClick={handleDownloadPdf}>
+          Download PDF
+        </button>
       </div>
 
       <div className="table-card">
@@ -139,6 +186,7 @@ function Attendance() {
               <th>Company</th>
               <th>Status Today</th>
               <th>Clock In Time</th>
+              <th>Clock Out Time</th>
               <th>Mark Attendance</th>
             </tr>
           </thead>
@@ -166,21 +214,35 @@ function Attendance() {
                       <span className="status-badge status-expiring">Not Marked</span>
                     )}
                   </td>
-                  <td>{todayAttendance ? formatMarkedTime(todayAttendance.markedAt) : "-"}</td>
+                  <td>{todayAttendance ? formatTime(todayAttendance.markedAt) : "-"}</td>
+                  <td>{todayAttendance ? formatTime(todayAttendance.clockOutAt) : "-"}</td>
                   <td className="action-buttons">
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleMarkAttendance(worker, "Present")}
-                    >
-                      Present
-                    </button>
+                    {!todayAttendance ? (
+                      <>
+                        <button
+                          className="edit-btn"
+                          onClick={() => handleMarkAttendance(worker, "Present")}
+                        >
+                          Present
+                        </button>
 
-                    <button
-                      className="delete-btn"
-                      onClick={() => handleMarkAttendance(worker, "Absent")}
-                    >
-                      Absent
-                    </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleMarkAttendance(worker, "Absent")}
+                        >
+                          Absent
+                        </button>
+                      </>
+                    ) : !todayAttendance.clockOutAt ? (
+                      <button
+                        className="primary-btn"
+                        onClick={() => handleClockOut(todayAttendance._id)}
+                      >
+                        Clock Out
+                      </button>
+                    ) : (
+                      <span className="status-badge status-active">Completed</span>
+                    )}
                   </td>
                 </tr>
               )
@@ -192,7 +254,7 @@ function Attendance() {
       <div className="table-card" style={{ marginTop: "24px" }}>
         <div className="dashboard-section-header" style={{ marginBottom: "18px" }}>
           <h2>Attendance History</h2>
-          <p>All saved attendance records with date and marking time</p>
+          <p>All saved attendance records with date, clock in and clock out times</p>
         </div>
 
         <div className="table-topbar">
@@ -212,6 +274,7 @@ function Attendance() {
               <th>Company</th>
               <th>Date</th>
               <th>Clock In Time</th>
+              <th>Clock Out Time</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -223,7 +286,8 @@ function Attendance() {
                 <td>{record.workerName}</td>
                 <td>{record.company}</td>
                 <td>{record.date}</td>
-                <td>{formatMarkedTime(record.markedAt)}</td>
+                <td>{formatTime(record.markedAt)}</td>
+                <td>{formatTime(record.clockOutAt)}</td>
                 <td>
                   <span
                     className={

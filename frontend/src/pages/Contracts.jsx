@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
+import { exportTableToPdf } from "../utils/exportPdf"
 
 function Contracts() {
   const [contracts, setContracts] = useState([])
@@ -145,6 +146,26 @@ function Contracts() {
     }
   }
 
+  const handleDownloadPdf = () => {
+    const columns = [
+      "Worker Name",
+      "Company",
+      "Start Date",
+      "End Date",
+      "Status"
+    ]
+
+    const rows = filteredContracts.map((contract) => [
+      contract.workerName,
+      contract.company,
+      contract.startDate,
+      contract.endDate,
+      contract.status
+    ])
+
+    exportTableToPdf("Contracts Records", columns, rows, "contracts-records.pdf")
+  }
+
   const filteredContracts = contracts.filter((contract) =>
     contract.workerName.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
   )
@@ -165,15 +186,21 @@ function Contracts() {
           <p>Manage all workforce contracts in Tekture.</p>
         </div>
 
-        <button
-          className="primary-btn"
-          onClick={() => {
-            resetForm()
-            setShowForm(true)
-          }}
-        >
-          Add Contract
-        </button>
+        <div className="form-actions">
+          <button className="secondary-btn" onClick={handleDownloadPdf}>
+            Download PDF
+          </button>
+
+          <button
+            className="primary-btn"
+            onClick={() => {
+              resetForm()
+              setShowForm(true)
+            }}
+          >
+            Add Contract
+          </button>
+        </div>
       </div>
 
       {showForm && (

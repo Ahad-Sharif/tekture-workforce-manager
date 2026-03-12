@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
+import { exportTableToPdf } from "../utils/exportPdf"
 
 function Workers() {
   const [workers, setWorkers] = useState([])
@@ -153,6 +154,30 @@ function Workers() {
     setShowForm(true)
   }
 
+  const handleDownloadPdf = () => {
+    const columns = [
+      "Name",
+      "Role",
+      "Company",
+      "Iqamah No",
+      "Iqamah Expiry",
+      "Phone Number",
+      "Status"
+    ]
+
+    const rows = filteredWorkers.map((worker) => [
+      worker.name,
+      worker.role,
+      worker.company,
+      worker.iqamahNo || "-",
+      worker.iqamahExpiryDate || "-",
+      worker.phoneNumber || "-",
+      worker.status
+    ])
+
+    exportTableToPdf("Workers Records", columns, rows, "workers-records.pdf")
+  }
+
   const filteredWorkers = workers.filter((worker) =>
     worker.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
   )
@@ -173,15 +198,24 @@ function Workers() {
           <p>Manage all outsourced workers in Tekture.</p>
         </div>
 
-        <button
-          className="primary-btn"
-          onClick={() => {
-            resetForm()
-            setShowForm(true)
-          }}
-        >
-          Add Worker
-        </button>
+        <div className="form-actions">
+          <button
+            className="secondary-btn"
+            onClick={handleDownloadPdf}
+          >
+            Download PDF
+          </button>
+
+          <button
+            className="primary-btn"
+            onClick={() => {
+              resetForm()
+              setShowForm(true)
+            }}
+          >
+            Add Worker
+          </button>
+        </div>
       </div>
 
       {showForm && (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
+import { exportTableToPdf } from "../utils/exportPdf"
 
 function Companies() {
   const [companies, setCompanies] = useState([])
@@ -137,6 +138,24 @@ function Companies() {
     }
   }
 
+  const handleDownloadPdf = () => {
+    const columns = [
+      "Company Name",
+      "Industry",
+      "Location",
+      "Workers Assigned"
+    ]
+
+    const rows = filteredCompanies.map((company) => [
+      company.name,
+      company.industry,
+      company.location,
+      company.workersAssigned
+    ])
+
+    exportTableToPdf("Companies Records", columns, rows, "companies-records.pdf")
+  }
+
   const filteredCompanies = companies.filter((company) =>
     company.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
   )
@@ -157,15 +176,21 @@ function Companies() {
           <p>Manage all client companies in Tekture.</p>
         </div>
 
-        <button
-          className="primary-btn"
-          onClick={() => {
-            resetForm()
-            setShowForm(true)
-          }}
-        >
-          Add Company
-        </button>
+        <div className="form-actions">
+          <button className="secondary-btn" onClick={handleDownloadPdf}>
+            Download PDF
+          </button>
+
+          <button
+            className="primary-btn"
+            onClick={() => {
+              resetForm()
+              setShowForm(true)
+            }}
+          >
+            Add Company
+          </button>
+        </div>
       </div>
 
       {showForm && (

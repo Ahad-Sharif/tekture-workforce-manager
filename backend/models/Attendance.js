@@ -27,6 +27,10 @@ const attendanceSchema = new mongoose.Schema(
     markedAt: {
       type: Date,
       required: true
+    },
+    clockOutAt: {
+      type: Date,
+      default: null
     }
   },
   {
