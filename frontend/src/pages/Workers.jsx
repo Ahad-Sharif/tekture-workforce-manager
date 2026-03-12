@@ -10,6 +10,9 @@ function Workers() {
   const [searchTerm, setSearchTerm] = useState("")
   const [editingId, setEditingId] = useState(null)
 
+  const user = JSON.parse(localStorage.getItem("user"))
+  const isAdmin = user?.role === "admin"
+
   const [newWorker, setNewWorker] = useState({
     name: "",
     role: "",
@@ -122,6 +125,11 @@ function Workers() {
   }
 
   const handleDeleteWorker = async (workerId) => {
+    if (!isAdmin) {
+      alert("Employees are not allowed to delete workers")
+      return
+    }
+
     const confirmDelete = window.confirm("Are you sure you want to delete this worker?")
 
     if (!confirmDelete) {
@@ -380,12 +388,14 @@ function Workers() {
                     Edit
                   </button>
 
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteWorker(worker._id)}
-                  >
-                    Delete
-                  </button>
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDeleteWorker(worker._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

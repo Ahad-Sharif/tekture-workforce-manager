@@ -9,6 +9,9 @@ function Attendance() {
   const [loading, setLoading] = useState(true)
   const [historySearchTerm, setHistorySearchTerm] = useState("")
 
+  const user = JSON.parse(localStorage.getItem("user"))
+  const isAdmin = user?.role === "admin"
+
   const today = new Date().toISOString().split("T")[0]
 
   const OFFICE_LATITUDE = 21.543333
@@ -157,6 +160,11 @@ function Attendance() {
   }
 
   const handleDeleteAttendance = async (attendanceId) => {
+    if (!isAdmin) {
+      alert("Employees are not allowed to delete attendance history")
+      return
+    }
+
     const confirmDelete = window.confirm("Are you sure you want to delete this attendance record?")
 
     if (!confirmDelete) {
@@ -425,12 +433,14 @@ function Attendance() {
                   </span>
                 </td>
                 <td className="action-buttons">
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteAttendance(record._id)}
-                  >
-                    Delete
-                  </button>
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDeleteAttendance(record._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

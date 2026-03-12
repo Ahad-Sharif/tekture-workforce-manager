@@ -10,6 +10,9 @@ function Companies() {
   const [searchTerm, setSearchTerm] = useState("")
   const [editingId, setEditingId] = useState(null)
 
+  const user = JSON.parse(localStorage.getItem("user"))
+  const isAdmin = user?.role === "admin"
+
   const [newCompany, setNewCompany] = useState({
     name: "",
     industry: "",
@@ -121,6 +124,11 @@ function Companies() {
   }
 
   const handleDeleteCompany = async (companyId) => {
+    if (!isAdmin) {
+      alert("Employees are not allowed to delete companies")
+      return
+    }
+
     const confirmDelete = window.confirm("Are you sure you want to delete this company?")
 
     if (!confirmDelete) {
@@ -309,12 +317,14 @@ function Companies() {
                     Edit
                   </button>
 
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteCompany(company._id)}
-                  >
-                    Delete
-                  </button>
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDeleteCompany(company._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

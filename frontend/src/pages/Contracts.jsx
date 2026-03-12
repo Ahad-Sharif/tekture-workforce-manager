@@ -10,6 +10,9 @@ function Contracts() {
   const [searchTerm, setSearchTerm] = useState("")
   const [editingId, setEditingId] = useState(null)
 
+  const user = JSON.parse(localStorage.getItem("user"))
+  const isAdmin = user?.role === "admin"
+
   const [newContract, setNewContract] = useState({
     workerName: "",
     company: "",
@@ -129,6 +132,11 @@ function Contracts() {
   }
 
   const handleDeleteContract = async (contractId) => {
+    if (!isAdmin) {
+      alert("Employees are not allowed to delete contracts")
+      return
+    }
+
     const confirmDelete = window.confirm("Are you sure you want to delete this contract?")
 
     if (!confirmDelete) {
@@ -344,12 +352,14 @@ function Contracts() {
                     Edit
                   </button>
 
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDeleteContract(contract._id)}
-                  >
-                    Delete
-                  </button>
+                  {isAdmin && (
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDeleteContract(contract._id)}
+                    >
+                      Delete
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
