@@ -7,6 +7,7 @@ function Attendance() {
   const [workers, setWorkers] = useState([])
   const [attendanceRecords, setAttendanceRecords] = useState([])
   const [loading, setLoading] = useState(true)
+  const [todaySearchTerm, setTodaySearchTerm] = useState("")
   const [historySearchTerm, setHistorySearchTerm] = useState("")
 
   const user = JSON.parse(localStorage.getItem("user"))
@@ -199,6 +200,10 @@ function Attendance() {
 
   const activeWorkers = workers.filter((worker) => worker.status === "Active")
 
+  const filteredTodayWorkers = activeWorkers.filter((worker) =>
+    worker.name.toLowerCase().includes(todaySearchTerm.trim().toLowerCase())
+  )
+
   const filteredHistory = attendanceRecords.filter((record) =>
     record.workerName.toLowerCase().includes(historySearchTerm.trim().toLowerCase())
   )
@@ -284,6 +289,16 @@ function Attendance() {
           <p>Date: {today}</p>
         </div>
 
+        <div className="table-topbar">
+          <input
+            type="text"
+            placeholder="Search today's attendance by worker name..."
+            className="search-input"
+            value={todaySearchTerm}
+            onChange={(event) => setTodaySearchTerm(event.target.value)}
+          />
+        </div>
+
         <table className="data-table">
           <thead>
             <tr>
@@ -298,7 +313,7 @@ function Attendance() {
           </thead>
 
           <tbody>
-            {activeWorkers.map((worker) => {
+            {filteredTodayWorkers.map((worker) => {
               const todayAttendance = getTodayAttendanceForWorker(worker._id)
 
               return (

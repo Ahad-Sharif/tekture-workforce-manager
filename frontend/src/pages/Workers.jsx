@@ -5,6 +5,7 @@ import { exportTableToExcel } from "../utils/exportExcel"
 
 function Workers() {
   const [workers, setWorkers] = useState([])
+  const [companies, setCompanies] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
@@ -30,13 +31,29 @@ function Workers() {
       setWorkers(data)
     } catch (error) {
       console.error("Failed to fetch workers:", error)
+    }
+  }
+
+  const fetchCompanies = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/companies`)
+      const data = await response.json()
+      setCompanies(data)
+    } catch (error) {
+      console.error("Failed to fetch companies:", error)
+    }
+  }
+
+  const fetchWorkersPageData = async () => {
+    try {
+      await Promise.all([fetchWorkers(), fetchCompanies()])
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchWorkers()
+    fetchWorkersPageData()
   }, [])
 
   const handleChange = (event) => {
@@ -65,7 +82,6 @@ function Workers() {
   const handleSaveWorker = async () => {
     const trimmedName = newWorker.name.trim()
     const trimmedRole = newWorker.role.trim()
-    const trimmedCompany = newWorker.company.trim()
     const trimmedIqamahNo = newWorker.iqamahNo.trim()
     const trimmedIqamahExpiryDate = newWorker.iqamahExpiryDate.trim()
     const trimmedPhoneNumber = newWorker.phoneNumber.trim()
@@ -73,7 +89,7 @@ function Workers() {
     if (
       trimmedName === "" ||
       trimmedRole === "" ||
-      trimmedCompany === "" ||
+      newWorker.company === "" ||
       trimmedIqamahNo === "" ||
       trimmedIqamahExpiryDate === "" ||
       trimmedPhoneNumber === ""
@@ -90,7 +106,7 @@ function Workers() {
     const workerToSave = {
       name: trimmedName,
       role: trimmedRole,
-      company: trimmedCompany,
+      company: newWorker.company,
       iqamahNo: trimmedIqamahNo,
       iqamahExpiryDate: trimmedIqamahExpiryDate,
       phoneNumber: trimmedPhoneNumber,
@@ -277,14 +293,19 @@ function Workers() {
               onChange={handleChange}
             />
 
-            <input
-              type="text"
+            <select
               name="company"
-              placeholder="Assigned Company"
               className="form-input"
               value={newWorker.company}
               onChange={handleChange}
-            />
+            >
+              <option value="">Select Assigned Company</option>
+              {companies.map((company) => (
+                <option key={company._id} value={company.name}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
 
             <input
               type="text"
@@ -323,8 +344,18 @@ function Workers() {
             </select>
           </div>
 
+          {companies.length === 0 && (
+            <p style={{ color: "#991b1b", marginBottom: "16px" }}>
+              No companies found. Please add a company first before adding a worker.
+            </p>
+          )}
+
           <div className="form-actions">
-            <button className="primary-btn" onClick={handleSaveWorker}>
+            <button
+              className="primary-btn"
+              onClick={handleSaveWorker}
+              disabled={companies.length === 0}
+            >
               {editingId ? "Update Worker" : "Save Worker"}
             </button>
 
