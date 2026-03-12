@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
 import { exportTableToPdf } from "../utils/exportPdf"
+import { exportTableToExcel } from "../utils/exportExcel"
 
 function Companies() {
   const [companies, setCompanies] = useState([])
@@ -138,6 +139,10 @@ function Companies() {
     }
   }
 
+  const filteredCompanies = companies.filter((company) =>
+    company.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
+  )
+
   const handleDownloadPdf = () => {
     const columns = [
       "Company Name",
@@ -156,9 +161,23 @@ function Companies() {
     exportTableToPdf("Companies Records", columns, rows, "companies-records.pdf")
   }
 
-  const filteredCompanies = companies.filter((company) =>
-    company.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
-  )
+  const handleDownloadExcel = () => {
+    const columns = [
+      "Company Name",
+      "Industry",
+      "Location",
+      "Workers Assigned"
+    ]
+
+    const rows = filteredCompanies.map((company) => [
+      company.name,
+      company.industry,
+      company.location,
+      company.workersAssigned
+    ])
+
+    exportTableToExcel("Companies Records", columns, rows, "companies-records.xlsx")
+  }
 
   if (loading) {
     return (
@@ -179,6 +198,10 @@ function Companies() {
         <div className="form-actions">
           <button className="secondary-btn" onClick={handleDownloadPdf}>
             Download PDF
+          </button>
+
+          <button className="secondary-btn" onClick={handleDownloadExcel}>
+            Download Excel
           </button>
 
           <button

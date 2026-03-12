@@ -13,7 +13,15 @@ router.get("/", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { workerId, workerName, company, status } = req.body
+    const {
+      workerId,
+      workerName,
+      company,
+      status,
+      latitude,
+      longitude,
+      officeStatus
+    } = req.body
 
     if (!workerId || !workerName || !company || !status) {
       return res.status(400).json({ message: "Missing required attendance fields" })
@@ -44,7 +52,10 @@ router.post("/", async (req, res) => {
       date: today,
       status,
       markedAt: now,
-      clockOutAt: null
+      clockOutAt: null,
+      latitude: typeof latitude === "number" ? latitude : null,
+      longitude: typeof longitude === "number" ? longitude : null,
+      officeStatus: officeStatus === "Inside Office" ? "Inside Office" : "Outside Office"
     })
 
     const savedAttendance = await newAttendance.save()

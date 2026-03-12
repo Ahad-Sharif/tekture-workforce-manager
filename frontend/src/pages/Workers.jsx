@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
 import { exportTableToPdf } from "../utils/exportPdf"
+import { exportTableToExcel } from "../utils/exportExcel"
 
 function Workers() {
   const [workers, setWorkers] = useState([])
@@ -154,6 +155,10 @@ function Workers() {
     setShowForm(true)
   }
 
+  const filteredWorkers = workers.filter((worker) =>
+    worker.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
+  )
+
   const handleDownloadPdf = () => {
     const columns = [
       "Name",
@@ -178,9 +183,29 @@ function Workers() {
     exportTableToPdf("Workers Records", columns, rows, "workers-records.pdf")
   }
 
-  const filteredWorkers = workers.filter((worker) =>
-    worker.name.toLowerCase().startsWith(searchTerm.trim().toLowerCase())
-  )
+  const handleDownloadExcel = () => {
+    const columns = [
+      "Name",
+      "Role",
+      "Company",
+      "Iqamah No",
+      "Iqamah Expiry",
+      "Phone Number",
+      "Status"
+    ]
+
+    const rows = filteredWorkers.map((worker) => [
+      worker.name,
+      worker.role,
+      worker.company,
+      worker.iqamahNo || "-",
+      worker.iqamahExpiryDate || "-",
+      worker.phoneNumber || "-",
+      worker.status
+    ])
+
+    exportTableToExcel("Workers Records", columns, rows, "workers-records.xlsx")
+  }
 
   if (loading) {
     return (
@@ -199,11 +224,12 @@ function Workers() {
         </div>
 
         <div className="form-actions">
-          <button
-            className="secondary-btn"
-            onClick={handleDownloadPdf}
-          >
+          <button className="secondary-btn" onClick={handleDownloadPdf}>
             Download PDF
+          </button>
+
+          <button className="secondary-btn" onClick={handleDownloadExcel}>
+            Download Excel
           </button>
 
           <button

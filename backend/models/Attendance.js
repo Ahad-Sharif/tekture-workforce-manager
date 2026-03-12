@@ -31,6 +31,19 @@ const attendanceSchema = new mongoose.Schema(
     clockOutAt: {
       type: Date,
       default: null
+    },
+    latitude: {
+      type: Number,
+      default: null
+    },
+    longitude: {
+      type: Number,
+      default: null
+    },
+    officeStatus: {
+      type: String,
+      enum: ["Inside Office", "Outside Office"],
+      default: "Outside Office"
     }
   },
   {

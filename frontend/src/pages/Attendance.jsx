@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { API_BASE_URL } from "../api"
 import { exportTableToPdf } from "../utils/exportPdf"
+import { exportTableToExcel } from "../utils/exportExcel"
 
 function Attendance() {
   const [workers, setWorkers] = useState([])
@@ -9,6 +10,10 @@ function Attendance() {
   const [historySearchTerm, setHistorySearchTerm] = useState("")
 
   const today = new Date().toISOString().split("T")[0]
+
+  const OFFICE_LATITUDE = 21.543333
+  const OFFICE_LONGITUDE = 39.172779
+  const OFFICE_RADIUS_METERS = 100
 
   const fetchWorkers = async () => {
     try {
@@ -42,8 +47,65 @@ function Attendance() {
     fetchAttendancePageData()
   }, [])
 
+  const getDistanceInMeters = (lat1, lon1, lat2, lon2) => {
+    const toRadians = (value) => (value * Math.PI) / 180
+
+    const earthRadius = 6371000
+    const dLat = toRadians(lat2 - lat1)
+    const dLon = toRadians(lon2 - lon1)
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRadians(lat1)) *
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2)
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
+    return earthRadius * c
+  }
+
+  const getCurrentLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation is not supported by this browser"))
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          })
+        },
+        (error) => {
+          reject(error)
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      )
+    })
+  }
+
   const handleMarkAttendance = async (worker, status) => {
     try {
+      const location = await getCurrentLocation()
+
+      const distance = getDistanceInMeters(
+        location.latitude,
+        location.longitude,
+        OFFICE_LATITUDE,
+        OFFICE_LONGITUDE
+      )
+
+      const officeStatus =
+        distance <= OFFICE_RADIUS_METERS ? "Inside Office" : "Outside Office"
+
       const response = await fetch(`${API_BASE_URL}/api/attendance`, {
         method: "POST",
         headers: {
@@ -53,7 +115,10 @@ function Attendance() {
           workerId: worker._id,
           workerName: worker.name,
           company: worker.company,
-          status
+          status,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          officeStatus
         })
       })
 
@@ -67,7 +132,7 @@ function Attendance() {
       await fetchAttendanceRecords()
     } catch (error) {
       console.error("Failed to mark attendance:", error)
-      alert("Failed to mark attendance")
+      alert("Location permission is required to mark attendance")
     }
   }
 
@@ -124,6 +189,12 @@ function Attendance() {
     })
   }
 
+  const activeWorkers = workers.filter((worker) => worker.status === "Active")
+
+  const filteredHistory = attendanceRecords.filter((record) =>
+    record.workerName.toLowerCase().includes(historySearchTerm.trim().toLowerCase())
+  )
+
   const handleDownloadPdf = () => {
     const columns = [
       "Worker Name",
@@ -131,7 +202,8 @@ function Attendance() {
       "Date",
       "Clock In",
       "Clock Out",
-      "Status"
+      "Status",
+      "Office Status"
     ]
 
     const rows = filteredHistory.map((record) => [
@@ -140,17 +212,36 @@ function Attendance() {
       record.date,
       formatTime(record.markedAt),
       formatTime(record.clockOutAt),
-      record.status
+      record.status,
+      record.officeStatus || "-"
     ])
 
     exportTableToPdf("Attendance Records", columns, rows, "attendance-records.pdf")
   }
 
-  const activeWorkers = workers.filter((worker) => worker.status === "Active")
+  const handleDownloadExcel = () => {
+    const columns = [
+      "Worker Name",
+      "Company",
+      "Date",
+      "Clock In",
+      "Clock Out",
+      "Status",
+      "Office Status"
+    ]
 
-  const filteredHistory = attendanceRecords.filter((record) =>
-    record.workerName.toLowerCase().includes(historySearchTerm.trim().toLowerCase())
-  )
+    const rows = filteredHistory.map((record) => [
+      record.workerName,
+      record.company,
+      record.date,
+      formatTime(record.markedAt),
+      formatTime(record.clockOutAt),
+      record.status,
+      record.officeStatus || "-"
+    ])
+
+    exportTableToExcel("Attendance Records", columns, rows, "attendance-records.xlsx")
+  }
 
   if (loading) {
     return (
@@ -168,9 +259,15 @@ function Attendance() {
           <p>Mark daily attendance for active workers with one click.</p>
         </div>
 
-        <button className="secondary-btn" onClick={handleDownloadPdf}>
-          Download PDF
-        </button>
+        <div className="form-actions">
+          <button className="secondary-btn" onClick={handleDownloadPdf}>
+            Download PDF
+          </button>
+
+          <button className="secondary-btn" onClick={handleDownloadExcel}>
+            Download Excel
+          </button>
+        </div>
       </div>
 
       <div className="table-card">
@@ -187,6 +284,7 @@ function Attendance() {
               <th>Status Today</th>
               <th>Clock In Time</th>
               <th>Clock Out Time</th>
+              <th>Office Status</th>
               <th>Mark Attendance</th>
             </tr>
           </thead>
@@ -216,6 +314,21 @@ function Attendance() {
                   </td>
                   <td>{todayAttendance ? formatTime(todayAttendance.markedAt) : "-"}</td>
                   <td>{todayAttendance ? formatTime(todayAttendance.clockOutAt) : "-"}</td>
+                  <td>
+                    {todayAttendance ? (
+                      <span
+                        className={
+                          todayAttendance.officeStatus === "Inside Office"
+                            ? "status-badge status-present"
+                            : "status-badge status-absent"
+                        }
+                      >
+                        {todayAttendance.officeStatus}
+                      </span>
+                    ) : (
+                      "-"
+                    )}
+                  </td>
                   <td className="action-buttons">
                     {!todayAttendance ? (
                       <>
@@ -254,7 +367,7 @@ function Attendance() {
       <div className="table-card" style={{ marginTop: "24px" }}>
         <div className="dashboard-section-header" style={{ marginBottom: "18px" }}>
           <h2>Attendance History</h2>
-          <p>All saved attendance records with date, clock in and clock out times</p>
+          <p>All saved attendance records with office check result</p>
         </div>
 
         <div className="table-topbar">
@@ -276,6 +389,7 @@ function Attendance() {
               <th>Clock In Time</th>
               <th>Clock Out Time</th>
               <th>Status</th>
+              <th>Office Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -297,6 +411,17 @@ function Attendance() {
                     }
                   >
                     {record.status}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={
+                      record.officeStatus === "Inside Office"
+                        ? "status-badge status-present"
+                        : "status-badge status-absent"
+                    }
+                  >
+                    {record.officeStatus || "Outside Office"}
                   </span>
                 </td>
                 <td className="action-buttons">
